@@ -1,0 +1,130 @@
+```{r}
+library(tidyverse)
+
+# --- 1. 初始化 ---
+set.seed(2026)
+n_per_group <- 100
+items <- c("Li1", "Li2", "La1", "La2", "Si1", "Si2", "Sa1", "Sa2", "Pi1", "Pi2", "Pa1", "Pa2")
+
+# --- 2. 模拟 Item 基础吸引力 (Alpha) ---
+# 即使是同一个维度，有的题目就是比别的题目更讨喜
+item_difficulty <- data.frame(
+  item = items,
+  alpha = rnorm(12, 0, 0.5) # 给每个题一个基础分
+)
+
+# --- 3. 设定群体真值 (Priors) ---
+# 顺序: L_orient, S_orient, P_orient, L_focus, S_focus, P_focus
+mu_nam <- c(-2.5, -4.0, -1.0,  1.5,  4.5,  0.5) 
+mu_ger <- c( 2.5,  0.5,  3.0,  3.5,  0.5,  3.0) 
+
+# --- 4. 生成个体特质 (Theta) ---
+sigma <- diag(rep(1, 6))
+thetas <- rbind(
+  MASS::mvrnorm(n_per_group, mu = mu_nam, Sigma = sigma),
+  MASS::mvrnorm(n_per_group, mu = mu_ger, Sigma = sigma)
+)
+
+df_pop <- data.frame(
+  ID = 1:200,
+  Community = rep(c("Namibia", "Germany"), each = 100)
+) %>% cbind(thetas)
+colnames(df_pop)[3:8] <- c("L_orient", "S_orient", "P_orient", "L_focus", "S_focus", "P_focus")
+
+# --- 5. 模拟选择过程 (你要求的概率逻辑) ---
+pairs <- combn(items, 2) %>% t() %>% as.data.frame()
+colnames(pairs) <- c("L", "R")
+
+sim_final <- expand.grid(ID = 1:200, Pair_IDX = 1:66) %>%
+  left_join(df_pop, by = "ID") %>%
+  mutate(Item_L = pairs$L[Pair_IDX], Item_R = pairs$R[Pair_IDX])
+
+# 核心函数：计算 Item 在个体心中的效用
+get_u <- function(item_name, id_data) {
+  # 1. 基础难度
+  a <- item_difficulty$alpha[item_difficulty$item == item_name]
+  # 2. 匹配维度和类型
+  d <- substr(item_name, 1, 1) # L/S/P
+  t <- substr(item_name, 2, 2) # i/a
+  
+  f <- id_data[[paste0(d, "_focus")]]
+  o <- id_data[[paste0(d, "_orient")]]
+  
+  # 效用公式
+  return(a + f + ifelse(t == "a", o, -o))
+}
+
+sim_final <- sim_final %>%
+  rowwise() %>%
+  mutate(
+    U_L = get_u(Item_L, .data),
+    U_R = get_u(Item_R, .data),
+    # --- 关键步骤：计算概率并采样 ---
+    # 效用差值
+    delta_U = U_L - U_R,
+    # 将差值映射为概率 (Probit link)
+    prob = pnorm(delta_U), 
+    # 按照这个概率进行随机实验 (1次伯努利试验)
+    Choice = rbinom(1, 1, prob)
+  ) %>% ungroup()
+
+# 转换为 brms 格式
+for(it in items) {
+  sim_final[[it]] <- ifelse(sim_final$Item_L == it, 1, ifelse(sim_final$Item_R == it, -1, 0))
+}
+
+write.csv(sim_final, "textbook_tirt_sim.csv", row.names = FALSE)
+```
+```{r}
+read_csv("textbook_tirt_sim.csv")
+```
+```{r}
+
+final_data <- sim_final %>%
+  mutate(
+ 
+    L_orient_p = La1 + La2 - (Li1 + Li2),
+    S_orient_p = Sa1 + Sa2 - (Si1 + Si2),
+    P_orient_p = Pa1 + Pa2 - (Pi1 + Pi2),
+    
+
+    L_focus_p = (La1 + La2 + Li1 + Li2),
+    S_focus_p = (Sa1 + Sa2 + Si1 + Si2),
+    P_focus_p = (Pa1 + Pa2 + Pi1 + Pi2)
+  )
+```
+
+```{r}
+library(brms)
+
+# 终极 TIRT 模型：支持社区异质性估计
+tirt_model_final <- brm(
+  formula = bf(
+    Choice ~ 0 + 
+      # 固定效应：Item 基础难度
+      Li1 + Li2 + La1 + La2 + Si1 + Si2 + Sa1 + Sa2 + Pi1 + Pi2 + Pa1 + Pa2 +
+      
+      # 核心：两个社区的平均 Profile (均值)
+      (L_orient_p + S_orient_p + P_orient_p + 
+       L_focus_p + S_focus_p + P_focus_p) : Community +
+      
+      # 随机效应：使用 gr() 允许两个社区拥有独立的个体差异（方差）
+      # 使用 || 强制维度间独立，以确保 N=200 下绝对收敛
+      (0 + L_orient_p + S_orient_p + P_orient_p + 
+           L_focus_p + S_focus_p + P_focus_p || gr(ID, by = Community))
+  ),
+  data = final_data,
+  family = bernoulli(link = "probit"),
+prior = c(
+  set_prior("normal(0, 1)", class = "b"),  # 缩小范围到 1
+  set_prior("normal(0, 1)", class = "sd")  # 限制方差的初始搜索范围
+),
+  init = 0,
+  backend = "cmdstanr", # 换成最快的后端
+  threads = threading(2),iter = 2000, warmup = 1000, chains = 4, cores = 4,
+  control = list(adapt_delta = 0.95)
+)
+```
+
+
+
