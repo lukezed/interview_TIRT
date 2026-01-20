@@ -1,130 +1,372 @@
 ```{r}
-library(tidyverse)
+# =========================================================================
+# 育儿重心 (Foci) 与导向 (Orientation) TIRT 最终模拟方案 (N=200, 12 Items)
+# =========================================================================
 
-# --- 1. 初始化 ---
+# 加载必要库
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, MASS, brms, cmdstanr)
+
+# --- 1. 定义 12 个行为项 (基于 PCI 改编) ---
 set.seed(2026)
-n_per_group <- 100
-items <- c("Li1", "Li2", "La1", "La2", "Si1", "Si2", "Sa1", "Sa2", "Pi1", "Pi2", "Pa1", "Pa2")
-
-# --- 2. 模拟 Item 基础吸引力 (Alpha) ---
-# 即使是同一个维度，有的题目就是比别的题目更讨喜
-item_difficulty <- data.frame(
-  item = items,
-  alpha = rnorm(12, 0, 0.5) # 给每个题一个基础分
+items_df <- data.frame(
+  item = c("La1", "La2", "Li1", "Li2", "Sa1", "Sa2", "Si1", "Si2", "Pa1", "Pa2", "Pi1", "Pi2"),
+  dim  = rep(c("L", "S", "P"), each = 4),
+  dir  = rep(c(1, 1, -1, -1), times = 3), # 1=a(自主), -1=i(关联)
+  alpha = rnorm(12, 0, 0.5)               # 模拟题目基础难度 (Alpha)
 )
+write.csv(items_df, "item_difficulty_truth.csv", row.names = FALSE)
 
-# --- 3. 设定群体真值 (Priors) ---
-# 顺序: L_orient, S_orient, P_orient, L_focus, S_focus, P_focus
-mu_nam <- c(-2.5, -4.0, -1.0,  1.5,  4.5,  0.5) 
-mu_ger <- c( 2.5,  0.5,  3.0,  3.5,  0.5,  3.0) 
+# --- 2. 模拟群体真值 (Ground Truth) ---
+# 均值设定逻辑：P_f = 0 为锚定点
+# 维度顺序：L_f, S_f, P_f, L_o, S_o, P_o
+mu_ger <- c( 1.0, -0.5,  0.0,   1.5,  0.5,  1.5)  # 德国：重L, 基准P, 轻S; 偏向a
+mu_nam <- c( 0.2,  1.5,  0.0,  -1.0, -2.0, -1.0)  # 纳米比亚：重S, 轻L, 基准P; 偏向i
 
-# --- 4. 生成个体特质 (Theta) ---
-sigma <- diag(rep(1, 6))
-thetas <- rbind(
-  MASS::mvrnorm(n_per_group, mu = mu_nam, Sigma = sigma),
-  MASS::mvrnorm(n_per_group, mu = mu_ger, Sigma = sigma)
-)
+n_group <- 100
+sigma   <- diag(rep(1, 6)) # 设定特质方差为1，暂不设复杂相关矩阵以防收敛困难
 
 df_pop <- data.frame(
   ID = 1:200,
-  Community = rep(c("Namibia", "Germany"), each = 100)
-) %>% cbind(thetas)
-colnames(df_pop)[3:8] <- c("L_orient", "S_orient", "P_orient", "L_focus", "S_focus", "P_focus")
+  Community = rep(c("Germany", "Namibia"), each = n_group)
+) %>% 
+  cbind(rbind(mvrnorm(n_group, mu = mu_ger, Sigma = sigma), 
+              mvrnorm(n_group, mu = mu_nam, Sigma = sigma)))
 
-# --- 5. 模拟选择过程 (你要求的概率逻辑) ---
-pairs <- combn(items, 2) %>% t() %>% as.data.frame()
-colnames(pairs) <- c("L", "R")
+colnames(df_pop)[3:8] <- c("L_f_true", "S_f_true", "P_f_true", "L_o_true", "S_o_true", "P_o_true")
+write.csv(df_pop, "ground_truth_traits.csv", row.names = FALSE) # 保存标准答案
 
-sim_final <- expand.grid(ID = 1:200, Pair_IDX = 1:66) %>%
-  left_join(df_pop, by = "ID") %>%
-  mutate(Item_L = pairs$L[Pair_IDX], Item_R = pairs$R[Pair_IDX])
+# --- 3. 构造 12 组循环平衡 Triad Blocks ---
+blocks <- list(
+  c("La1", "Si1", "Pa1"), c("La2", "Si2", "Pa2"),
+  c("Li1", "Sa1", "Pi1"), c("Li2", "Sa2", "Pi2"),
+  c("La1", "Li1", "Sa1"), c("La2", "Li2", "Sa2"),
+  c("Si1", "Sa1", "Pi1"), c("Si2", "Sa2", "Pi2"),
+  c("Pa1", "Pi1", "La1"), c("Pa2", "Pi2", "La2"),
+  c("Li1", "Si1", "Pi1"), c("La2", "Sa2", "Pa2")
+)
 
-# 核心函数：计算 Item 在个体心中的效用
-get_u <- function(item_name, id_data) {
-  # 1. 基础难度
-  a <- item_difficulty$alpha[item_difficulty$item == item_name]
-  # 2. 匹配维度和类型
-  d <- substr(item_name, 1, 1) # L/S/P
-  t <- substr(item_name, 2, 2) # i/a
-  
-  f <- id_data[[paste0(d, "_focus")]]
-  o <- id_data[[paste0(d, "_orient")]]
-  
-  # 效用公式
-  return(a + f + ifelse(t == "a", o, -o))
+# --- 4. 模拟响应：从效用(Utility)到排序(Rank)再到成对(Pairs) ---
+get_utility <- function(item_name, id_row) {
+  info <- items_df[items_df$item == item_name, ]
+  f_val <- id_row[[paste0(info$dim, "_f_true")]]
+  o_val <- id_row[[paste0(info$dim, "_o_true")]]
+  # 效用方程: U = Alpha + Focus + (Dir * Orient) + Error
+  return(info$alpha + f_val + (info$dir * o_val) + rnorm(1, 0, 1))
 }
 
-sim_final <- sim_final %>%
-  rowwise() %>%
-  mutate(
-    U_L = get_u(Item_L, .data),
-    U_R = get_u(Item_R, .data),
-    # --- 关键步骤：计算概率并采样 ---
-    # 效用差值
-    delta_U = U_L - U_R,
-    # 将差值映射为概率 (Probit link)
-    prob = pnorm(delta_U), 
-    # 按照这个概率进行随机实验 (1次伯努利试验)
-    Choice = rbinom(1, 1, prob)
-  ) %>% ungroup()
-
-# 转换为 brms 格式
-for(it in items) {
-  sim_final[[it]] <- ifelse(sim_final$Item_L == it, 1, ifelse(sim_final$Item_R == it, -1, 0))
-}
-
-write.csv(sim_final, "textbook_tirt_sim.csv", row.names = FALSE)
-```
-```{r}
-read_csv("textbook_tirt_sim.csv")
-```
-```{r}
-
-final_data <- sim_final %>%
-  mutate(
- 
-    L_orient_p = La1 + La2 - (Li1 + Li2),
-    S_orient_p = Sa1 + Sa2 - (Si1 + Si2),
-    P_orient_p = Pa1 + Pa2 - (Pi1 + Pi2),
+bt_list <- list()
+for(i in 1:nrow(df_pop)) {
+  id_row <- df_pop[i, ]
+  for(b in 1:length(blocks)) {
+    b_items <- blocks[[b]]
+    utils <- sapply(b_items, get_utility, id_row = id_row)
+    ord <- b_items[order(utils, decreasing = TRUE)] # 获取 Most > Middle > Least 排序
     
+    # 拆解为 3 组 Bradley-Terry 对决
+    bt_list[[length(bt_list)+1]] <- data.frame(ID=id_row$ID, Community=id_row$Community, L=ord[1], R=ord[2], Win=1)
+    bt_list[[length(bt_list)+1]] <- data.frame(ID=id_row$ID, Community=id_row$Community, L=ord[2], R=ord[3], Win=1)
+    bt_list[[length(bt_list)+1]] <- data.frame(ID=id_row$ID, Community=id_row$Community, L=ord[1], R=ord[3], Win=1)
+  }
+}
+df_bt <- bind_rows(bt_list)
 
-    L_focus_p = (La1 + La2 + Li1 + Li2),
-    S_focus_p = (Sa1 + Sa2 + Si1 + Si2),
-    P_focus_p = (Pa1 + Pa2 + Pi1 + Pi2)
+# --- 5. 构造 TIRT 设计矩阵 ---
+for(it in items_df$item) {
+  df_bt[[it]] <- ifelse(df_bt$L == it, 1, ifelse(df_bt$R == it, -1, 0))
+}
+
+df_bt <- df_bt %>%
+  mutate(
+    # Focus 差值项 (P_f 作为 0 基准，不在模型中出现)
+    diff_L_f = (substr(L,1,1)=="L") - (substr(R,1,1)=="L"),
+    diff_S_f = (substr(L,1,1)=="S") - (substr(R,1,1)=="S"),
+    # Orientation 差值项
+    diff_L_o = (substr(L,1,1)=="L")*(items_df$dir[match(L, items_df$item)]) - 
+               (substr(R,1,1)=="L")*(items_df$dir[match(R, items_df$item)]),
+    diff_S_o = (substr(L,1,1)=="S")*(items_df$dir[match(L, items_df$item)]) - 
+               (substr(R,1,1)=="S")*(items_df$dir[match(R, items_df$item)]),
+    diff_P_o = (substr(L,1,1)=="P")*(items_df$dir[match(L, items_df$item)]) - 
+               (substr(R,1,1)=="P")*(items_df$dir[match(R, items_df$item)])
+  )
+
+write.csv(df_bt, "sim_demo_responses.csv", row.names = FALSE)
+
+# --- 6. 运行贝叶斯 TIRT 模型 ---
+# 注意：file 参数会自动保存模型，下次运行时若文件存在会直接加载
+fit_tirt <- brm(
+  formula = Win ~ 0 + La1 + La2 + Li1 + Li2 + Sa1 + Sa2 + Si1 + Si2 + Pa1 + Pa2 + Pi1 + Pi2 + 
+            Community:(diff_L_f + diff_S_f + diff_L_o + diff_S_o + diff_P_o) + 
+            (0 + diff_L_f + diff_S_f + diff_L_o + diff_S_o + diff_P_o | ID),
+  data = df_bt, 
+  family = bernoulli(link = "probit"),
+  prior = c(
+    set_prior("normal(0, 1.5)", class = "b"),      # 固定效应正则化
+    set_prior("lkj(2)", class = "cor"),            # 约束个体特质相关矩阵
+    set_prior("exponential(1)", class = "sd")      # 约束方差
+  ),
+  chains = 4, cores = 4, iter = 2000, warmup = 1000,
+  file = "parenting_tirt_model",                   # 自动保存为 .rds
+  backend = "cmdstanr",
+  control = list(adapt_delta = 0.95)
+)
+
+# --- 7. 结果验证：群体差异 (Foci & Orientation) ---
+print(summary(fit_tirt))
+
+# --- 8. 结果验证：个体 Profile 还原度相关性 ---
+# 提取随机效应得分 (EAP)
+ranef_res <- ranef(fit_tirt)$ID[, , ] %>% as.data.frame() %>% rownames_to_column("ID") %>% mutate(ID = as.numeric(ID))
+comparison <- df_pop %>% left_join(ranef_res, by = "ID")
+
+# 检查 L_f (语言关注度) 的还原度
+cat("L_f 还原相关系数:", cor(comparison$L_f_true, comparison$Estimate.diff_L_f), "\n")
+# 检查 S_f (社会关注度) 的还原度
+cat("S_f 还原相关系数:", cor(comparison$S_f_true, comparison$Estimate.diff_S_f), "\n")
+```
+
+```{r}
+ranef_summary <- ranef(fit_tirt)$ID
+# 将三维数组转换为宽格式数据框
+ranef_wide <- do.call(data.frame, lapply(seq_len(dim(ranef_summary)[3]), function(i) ranef_summary[, , i]))
+# 重命名列以便识别 (brms默认命名很乱)
+trait_names <- dimnames(ranef_summary)[[3]] # 获取特质名称 (diff_L_f 等)
+stat_names  <- dimnames(ranef_summary)[[2]] # 获取统计量名称 (Estimate, Q2.5, Q97.5 等)
+new_colnames <- as.vector(outer(stat_names, trait_names, paste, sep = "."))
+colnames(ranef_wide) <- new_colnames
+
+# 添加 ID 列并转换为长格式以便合并
+ranef_long <- ranef_wide %>%
+  rownames_to_column("ID") %>%
+  mutate(ID = as.numeric(ID))
+
+# 合并真值数据和估计数据
+plot_data <- left_join(df_pop, ranef_long, by = "ID")
+
+# ==============================================================================
+# 1. 定义通用绘图函数 (为了代码整洁)
+# ==============================================================================
+plot_recovery <- function(data, true_col, est_col, lower_col, upper_col, title_text) {
+  # 计算相关系数，显示在标题上
+  cor_val <- round(cor(data[[true_col]], data[[est_col]]), 2)
+  
+  ggplot(data, aes_string(x = true_col, y = est_col, color = "Community")) +
+    # 添加完美还原参考线 (对角线)
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray60", size = 1) +
+    # 添加个体估计点的 95% 置信区间误差棒
+    geom_errorbar(aes_string(ymin = lower_col, ymax = upper_col), 
+                  width = 0, alpha = 0.2, size = 0.5) +
+    # 添加个体估计点
+    geom_point(size = 2, alpha = 0.7) +
+    # 设置颜色主题 (德国黑/纳米比亚红，对比鲜明)
+    scale_color_manual(values = c("Germany" = "#2c3e50", "Namibia" = "#e74c3c")) +
+    # 设置坐标轴范围和标签
+    labs(
+      title = paste0(title_text, " (Recovery r = ", cor_val, ")"),
+      x = "True Latent Value (Simulated)",
+      y = "Estimated Posterior Mean (EAP)"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(face = "bold"),
+      legend.position = "top",
+      panel.grid.minor = element_blank()
+    ) +
+    # 确保坐标轴比例一致，视觉上对角线是45度
+    coord_fixed(ratio = 1)
+}
+
+# ==============================================================================
+# 2. 生成对比图
+# ==============================================================================
+
+# --- 图1：L_Focus (语言关注度) 还原对比 ---
+p1_Lf <- plot_recovery(
+  data = plot_data,
+  true_col  = "L_f_true",          # 真值列名
+  est_col   = "Estimate.diff_L_f", # 估计值列名
+  lower_col = "Q2.5.diff_L_f",     # 置信区间下界
+  upper_col = "Q97.5.diff_L_f",    # 置信区间上界
+  title_text = "Linguistic (L_f)"
+)
+
+# --- 图2：S_Focus (社会关注度) 还原对比 ---
+p2_Sf <- plot_recovery(
+  data = plot_data,
+  true_col  = "S_f_true",
+  est_col   = "Estimate.diff_S_f",
+  lower_col = "Q2.5.diff_S_f",
+  upper_col = "Q97.5.diff_S_f",
+  title_text = "Social (S_f)"
+)
+
+# 展示图表
+print(p1_Lf)
+print(p2_Sf)
+
+p1_Lf|p2_Sf
+```
+
+```{r}
+# --- 1. 定义 Focus 的真值 (以 P=0 为基准) ---
+true_f_values <- data.frame(
+  Community = rep(c("Germany", "Namibia"), each = 2),
+  Trait = rep(c("Language Focus (L)", "Social Focus (S)"), times = 2),
+  TrueValue = c(1.0, -0.5,  # Germany: 重语言, 轻社交
+                0.2,  1.5)  # Namibia: 轻语言, 重社交
+)
+
+# --- 2. 绘图：重叠小山图 + 双真值线 ---
+p_focus_with_truth <- ggplot(plot_draws_overlap, aes(x = value, fill = Community, color = Community)) +
+  # A. 核心：半透明密度图
+  geom_density(alpha = 0.5, size = 0.8, position = "identity") +
+  
+  # B. 0 线 (Physical Baseline)
+  geom_vline(xintercept = 0, linetype = "dotted", color = "gray30", size = 0.7) +
+  
+  # C. 关键：叠加真值垂直线
+  # 使用与 Community 匹配的颜色，帮助面试官快速对应
+  geom_vline(data = true_f_values, aes(xintercept = TrueValue, color = Community), 
+             linetype = "dashed", size = 1) +
+  
+  # D. 分面与排版
+  facet_wrap(~Trait, ncol = 1, scales = "fixed") +
+  
+  # E. 颜色方案 (灰色 Germany, 红色 Namibia)
+  scale_fill_manual(values = c("Germany" = "#7f8c8d", "Namibia" = "#e74c3c")) +
+  scale_color_manual(values = c("Germany" = "#2c3e50", "Namibia" = "#c0392b")) +
+  
+  # F. 标签与美化
+  labs(
+    title = "Developmental Foci Recovery: Germany vs. Namibia",
+    x = "Relative Importance (Latent Scale)",
+    y = "Posterior Density",
+    fill = "Community", color = "Community"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    strip.text = element_text(face = "bold", size = 10),
+    legend.position = "top",
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(1.5, "lines")
+  )
+
+# 打印图像
+print(p_focus_with_truth)
+```
+
+
+
+```{r}
+library(tidyverse)
+library(posterior)
+
+# --- 1. 准备 Orientation 的真值数据 (与之前一致) ---
+true_o_values <- data.frame(
+  Community = rep(c("Germany", "Namibia"), each = 3),
+  Trait = rep(c("Language Orientation (a vs i)", 
+                "Social Orientation (a vs i)", 
+                "Physical Orientation (a vs i)"), times = 2),
+  TrueValue = c(1.5, 0.5, 1.5,   # Germany 真值
+               -1.0, -2.0, -1.0) # Namibia 真值
+)
+
+# --- 2. 提取后验抽样 ---
+draws_o_overlap <- as_draws_df(fit_tirt) %>%
+  dplyr::select(dplyr::starts_with("b_Community")) %>%
+  dplyr::select(dplyr::contains("_o")) %>%
+  pivot_longer(everything(), names_to = "parameter", values_to = "value") %>%
+  mutate(
+    Community = ifelse(str_detect(parameter, "Germany"), "Germany", "Namibia"),
+    Trait = case_when(
+      str_detect(parameter, "diff_L_o") ~ "Language Orientation (a vs i)",
+      str_detect(parameter, "diff_S_o") ~ "Social Orientation (a vs i)",
+      str_detect(parameter, "diff_P_o") ~ "Physical Orientation (a vs i)",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(!is.na(Trait))
+
+# --- 3. 绘制三行重叠密度图 + 双真值线 ---
+ggplot(draws_o_overlap, aes(x = value, fill = Community, color = Community)) +
+  # A. 半透明重叠小山
+  geom_density(alpha = 0.5, size = 0.8, position = "identity") +
+  
+  # B. 0 刻度虚线 (中立)
+  geom_vline(xintercept = 0, linetype = "dotted", color = "gray30", size = 0.7) +
+  
+  # C. 核心：叠加两组真值线
+  # 我们用与山峰相同的颜色标出真值线，面试官一眼就能对上
+  geom_vline(data = true_o_values, aes(xintercept = TrueValue, color = Community), 
+             linetype = "dashed", size = 1) +
+  
+  # D. 分面展示：L, S, P 三行
+  facet_wrap(~Trait, ncol = 1, scales = "fixed") +
+  
+  # 颜色：德国灰色，纳米比亚红色
+  scale_fill_manual(values = c("Germany" = "#7f8c8d", "Namibia" = "#e74c3c")) +
+  scale_color_manual(values = c("Germany" = "#2c3e50", "Namibia" = "#c0392b")) +
+  
+  labs(
+    title = "Orientation Parameter Recovery: Overlapping Densities",
+    x = "Orientation Preference (Autonomous > 0 > Relational)",
+    y = "Posterior Density",
+    fill = "Community", color = "Community"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    strip.text = element_text(face = "bold", size = 10),
+    legend.position = "top",
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(1.5, "lines")
   )
 ```
 
 ```{r}
-library(brms)
+library(tidyverse)
+library(posterior)
+library(tidybayes)
 
-# 终极 TIRT 模型：支持社区异质性估计
-tirt_model_final <- brm(
-  formula = bf(
-    Choice ~ 0 + 
-      # 固定效应：Item 基础难度
-      Li1 + Li2 + La1 + La2 + Si1 + Si2 + Sa1 + Sa2 + Pi1 + Pi2 + Pa1 + Pa2 +
-      
-      # 核心：两个社区的平均 Profile (均值)
-      (L_orient_p + S_orient_p + P_orient_p + 
-       L_focus_p + S_focus_p + P_focus_p) : Community +
-      
-      # 随机效应：使用 gr() 允许两个社区拥有独立的个体差异（方差）
-      # 使用 || 强制维度间独立，以确保 N=200 下绝对收敛
-      (0 + L_orient_p + S_orient_p + P_orient_p + 
-           L_focus_p + S_focus_p + P_focus_p || gr(ID, by = Community))
-  ),
-  data = final_data,
-  family = bernoulli(link = "probit"),
-prior = c(
-  set_prior("normal(0, 1)", class = "b"),  # 缩小范围到 1
-  set_prior("normal(0, 1)", class = "sd")  # 限制方差的初始搜索范围
-),
-  init = 0,
-  backend = "cmdstanr", # 换成最快的后端
-  threads = threading(2),iter = 2000, warmup = 1000, chains = 4, cores = 4,
-  control = list(adapt_delta = 0.95)
-)
+# --- 1. 确保真值数据框中的列名与绘图数据一致 ---
+# 假设 items_df 已经存在，我们将列名改为 Item 以便 facet 匹配
+true_values <- items_df %>%
+  dplyr::select(item, alpha) %>%
+  rename(Item = item, TrueAlpha = alpha)
+
+# --- 2. 提取后验抽样 ---
+item_draws <- posterior::as_draws_df(fit_tirt) %>%
+  dplyr::select(dplyr::starts_with("b_"), -dplyr::contains(":")) %>% # 排除交互项/群体项
+  dplyr::select(dplyr::one_of(paste0("b_", true_values$Item))) %>%   # 只选这12个题目
+  pivot_longer(everything(), names_to = "Item", values_to = "Difficulty") %>%
+  mutate(Item = str_remove(Item, "b_"))
+
+# --- 3. 绘制带真值标注的 3x4 矩阵图 ---
+ggplot(item_draws, aes(x = Difficulty)) +
+  # A. 后验分布（小山包）
+  geom_density(aes(fill = Item), alpha = 0.5, color = "white") +
+  
+  # B. 0 刻度线（基准参考）
+  geom_vline(xintercept = 0, linetype = "dotted", color = "gray40", size = 0.8) +
+  
+  # C. 关键：添加真值线 (True Value)
+  # 使用不同的 data 源，这样每个 facet 都会根据 Item 匹配对应的 TrueAlpha
+  geom_vline(data = true_values, aes(xintercept = TrueAlpha), 
+             color = "#e74c3c", linetype = "dashed", size = 1) +
+  
+  # D. 3x4 布局
+  facet_wrap(~Item, nrow = 3, ncol = 4) +
+  
+  scale_fill_viridis_d(option = "mako") +
+  labs(
+    title = "Item Difficulty Recovery: Posterior vs. Truth",
+    x = "Latent Difficulty (Alpha)",
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
 ```
-
-
 
