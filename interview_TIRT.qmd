@@ -1,23 +1,26 @@
 ---
-title: "Quarto DIME Theme"
-subtitle: "A minimalist theme for Quarto/Reveal.js presentations for DIME"
-author: "[Bernhard Bieri](https://bernhardbieri.ch)"
-institute: Development Impact Evaluation (DIME)
+title: "Interview - Developmental Milestone Project"
+subtitle: "How to Measure Parents' Developmental Foci: Domains and Methodologies"
+author: "Chi Zhang"
+institute: the University of Manchester
 date: today
 date-format: "dddd, [the] D[<sup style='font-size:65%;font-style:italic;'>th</sup>] [of] MMMM, YYYY"
 bibliography: bib/template.bib
 format:
   dime-revealjs:
     embed-resources: true
+    footer: " "
     self-contained-math: false
     output-file: index.html
     toc: true
     toc-depth: 1
     toc-title: "Contents"
     preview-links: false
-    logo: "logos/DIME_COLOR.png"
-    footer: "[DIME](https://www.worldbank.org/dime) theme. Code on [GitHub](https://github.com/dime-worldbank/quarto-dime-theme)."
+
     html-math-method: mathjax
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r Setup}
@@ -28,99 +31,72 @@ format:
 # DIME:
 source("_extensions/dime-worldbank/dime/setup_dime_palettes.R")
 source("_extensions/dime-worldbank/dime/setup_ggplot2_dime.R")
-# Worldbank:
-# source("_extensions/dime/setup_dime_palettes.R")
-# source("_extensions/dime/setup_ggplot2_dime.R")
 
-# Install R libraries
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
   dplyr, DT, ggplot2, ggpubr, ggrepel, ggtext, gt, here, huxtable, 
   knitr, leaflet, osmdata, pacman, pagedown, palmerpenguins,
-  reactable, sf, tidyr, tidyverse
+  reactable, sf, tidyr, tidyverse, brms, rstan, patchwork
 )
 ```
 
-## Authors
+## About me
 
-:::: {.columns .vh-center-container}
+-   **PhD in Education**, The University of Manchester (2021–Present);\
+    *From belief to practice: Understanding teachers’ pedagogic choices
+    in China’s mathematics education*
 
-::: {.column width="33%"}
-<img src="https://img.icons8.com/cotton/64/null/gender-neutral-user--v3.png"/>
+-   **MSc in Research Methods with Education** (Distinction,
+    2020–2021);\
+    *The association between mathematics teachers’ exclusivity belief
+    and pedagogic practice*
 
-**Author 1**
+-   **MA in Mathematics and Pedagogy**, The Education University of Hong
+    Kong (2019–2020)
 
-Affiliation
-:::
+## Interview question
 
-::: {.column width="33%"}
-<img src="https://img.icons8.com/cotton/64/null/gender-neutral-user--v3.png"/>
+1.  How can one assess parents' developmental foci in a cross-cultural
+    context? With developmental foci, we mean the domain (e.g.
+    linguistic, social, physical, etc.) of a child’s development that is
+    of particular importance to parents.
+2.  Think about two communities (could be Germany and Namibia, but also
+    other contexts you have experience with) and formulate hypotheses
+    regarding potential differences in developmental foci.
 
-**Author 2**
-
-Affiliation
-:::
-
-::: {.column width="34%"}
-<img src="https://img.icons8.com/cotton/64/null/gender-neutral-user--v3.png"/>
-
-**Author 3**
-
-Affiliation
-:::
-
-::::
-
-## Introducing the DIME's Quarto theme
-
-This presentation template accelerates the creation of
-[Reveal.js](https://revealjs.com/) presentations by taking care of the
-formatting of your presentations so that users can focus on the **content**.
-
-## What is Quarto?
-
-Quarto enables you to weave together text written in Markdown and
-executable code into a finished publication-ready document. Quarto is a
-**language agnostic** making it ideal for research teams working with
-different languages such as Python and R.
-
-> To learn more about Quarto presentations specifically see <https://quarto.org/docs/presentations/>.
-
-## Why Quarto? What about Rmd presentations? {auto-animate="true"}
-
-- Yihui Xie has [a neat blog post](https://yihui.org/en/2022/04/quarto-r-markdown/) explaining the difference between the two ways of rendering presentations.
-- Quarto also has [a nice FAQ thread](https://quarto.org/docs/faq/rmarkdown.html) on their website about the differences between `.Rmd` and Quarto documents.
--  **Key Insight 1:** While there is no obvious need for existing `.Rmd` users to switch yet, Quarto's new features will most likely not be backported to `.Rmd`.
--  **Key Insight 2:** The present template can easily be used by folks running their analysis in Python thanks to the language agnostic nature of Quarto!
-
-# The Basics! {background-color="#07202E"}
+# The basic IRT assumptions {background-color="#07202E"}
 
 ## Bullets
 
-When you click the **Render** button a document will be generated that includes:
+When you click the **Render** button a document will be generated that
+includes:
 
 -   Content authored with markdown
 -   Output from executable code
 
-> This is part of the [Quarto documentation](https://quarto.org/docs/presentations/).
+> This is part of the [Quarto
+> documentation](https://quarto.org/docs/presentations/).
 
 ## R Code
 
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code.
-You can embed code like this:
+When you click the **Render** button a presentation will be generated
+that includes both content and the output of embedded code. You can
+embed code like this:
 
 ```{r mini_code_test}
 #| echo: true
 1 + 1
 ```
 
-> This is part of the [Quarto documentation](https://quarto.org/docs/presentations/).
+> This is part of the [Quarto
+> documentation](https://quarto.org/docs/presentations/).
 
 You can also add `text marked as code`!
 
 ## Equations
 
-Adding Latex style equations is straightforward. Here is Euler's identity:
+Adding Latex style equations is straightforward. Here is Euler's
+identity:
 
 $$
 \begin{equation}
@@ -140,22 +116,21 @@ $$
 
 ## Images
 
-Adding images is easy, simply type `![Photo Description](path\to\image)`, et
-voilà!
+Adding images is easy, simply type
+`![Photo Description](path\to\image)`, et voilà!
 
 ![](https://cdn.pixabay.com/photo/2019/06/21/19/27/switzerland-4290226_960_720.jpg)
 
-Source: [Link](https://cdn.pixabay.com/photo/2019/06/21/19/27/switzerland-4290226_960_720.jpg)
+Source:
+[Link](https://cdn.pixabay.com/photo/2019/06/21/19/27/switzerland-4290226_960_720.jpg)
 
 ## Background image {background-image="images/train.jpg"}
 
-[Source: [Link](https://cdn.pixabay.com/photo/2012/10/25/23/18/train-62849_960_720.jpg)]{.absolute bottom=0 left=0}
+[Source:
+[Link](https://cdn.pixabay.com/photo/2012/10/25/23/18/train-62849_960_720.jpg)]{.absolute
+bottom="0" left="0"}
 
-# Advanced Layouts! {background-color="#07202E" background-opacity="0.8"}
-
-To make a "section" slide like this, use:
-
-    # Title of slide {background-color="#07202E"}
+# Some concerns {background-color="#07202E" background-opacity="0.8"}
 
 ## Tabset example
 
@@ -174,7 +149,6 @@ More content here, for tabset 2 :)
 Hi!
 
 . . .
-
 
 Use `. . .` to separate content as an incremental slide!
 
@@ -210,7 +184,8 @@ g <- starwars |>
   theme_dime()
 ```
 
-> See the [Quarto Documentation for more details.](https://quarto.org/docs/presentations/revealjs/#code-blocks)
+> See the [Quarto Documentation for more
+> details.](https://quarto.org/docs/presentations/revealjs/#code-blocks)
 
 ## Before showing the results :)
 
@@ -222,10 +197,10 @@ g
 
 ## A DIME color palette
 
-The theme also contains a DIME/World Bank color palette and a color generator to make
-graphs more uniform and easier to generate. `dime_palette()` yields a named vector
-with the HEX codes of the corresponding colors for an easy integration in
-`{ggplot2}` graphs.
+The theme also contains a DIME/World Bank color palette and a color
+generator to make graphs more uniform and easier to generate.
+`dime_palette()` yields a named vector with the HEX codes of the
+corresponding colors for an easy integration in `{ggplot2}` graphs.
 
 ```{r}
 #| fig.align: center
@@ -240,12 +215,11 @@ dime_palette(name = "DIME", 21, type = "continuous")
 
 ## A few more penguin examples {.scrollable}
 
-Let's create a few more plots using the great `{palmerpenguins}` dataset and
-illustrate Simpson's Paradox. These examples are inspired by
-[this great talk](https://apreshill.github.io/palmerpenguins-useR-2022).
+Let's create a few more plots using the great `{palmerpenguins}` dataset
+and illustrate Simpson's Paradox. These examples are inspired by [this
+great talk](https://apreshill.github.io/palmerpenguins-useR-2022).
 
-:::: {.columns}
-
+::::: columns
 ::: {.column width="50%"}
 ```{r}
 #| fig.align: center
@@ -293,15 +267,16 @@ penguins |>
   theme_dime()
 ```
 :::
-
-::::
+:::::
 
 ## Creating interactive graphs with Observable JS {.scrollable .small}
 
-Another way of creating interactive visualizations within your presentations
-is to use [Observable JS](https://observablehq.com/), a Java Script framework
-developed by the creators of [D3.js](https://d3js.org/). See the [Quarto
-documentation](https://quarto.org/docs/interactive/ojs/) for more details.
+Another way of creating interactive visualizations within your
+presentations is to use [Observable JS](https://observablehq.com/), a
+Java Script framework developed by the creators of
+[D3.js](https://d3js.org/). See the [Quarto
+documentation](https://quarto.org/docs/interactive/ojs/) for more
+details.
 
 ```{ojs}
 data = FileAttachment("data/palmer-penguins.csv").csv({ typed: true })
@@ -350,15 +325,11 @@ Plot.rectY(filtered,
 
 ## Penguin regression tables
 
-:::: {.columns .vh-center-container}
-
+::::: {.columns .vh-center-container}
 ::: {.column width="40%"}
-
 $$
 \text{Bill Depth}_{i} = \alpha + \beta \times \text{Bill Length}_{i} + \epsilon_{i}
 $$
-
-
 
 ```{r}
 #| fig.align: center
@@ -370,13 +341,11 @@ huxtable::huxreg(fullmodel) |>
 ```
 :::
 
-:::{.column width="40%"}
-
+::: {.column width="40%"}
 $$
 \text{Bill Depth}_{i, k} = \alpha_{k} + \beta_{k} \times \text{Bill Length}_{k, i} + \epsilon_{i} \\
 \text{where } k = \text{Gentoo}
 $$
-
 
 ```{r}
 #| fig.align: center
@@ -387,16 +356,14 @@ gentoomodel <- lm(bill_depth_mm ~ bill_length_mm,
 huxtable::huxreg(gentoomodel) |>
   huxtable::set_font_size(11) # Smaller font size to fit on slide
 ```
-
 :::
-
-::::
+:::::
 
 ## What about other tables? {.smaller}
 
 ### `knitr::kable()`
 
-::: {.columns .h-center-container}
+::::: {.columns .h-center-container}
 ::: {.column width="45%"}
 ```{r}
 #| label: kable-ex
@@ -422,12 +389,11 @@ knitr::kable(tab)
 #| eval: true
 ```
 :::
-:::
+:::::
 
 ## `DT::datatable()` {.smaller}
 
-With the `smaller` class in the slide!
-Ex: `## slide name {.smaller}`
+With the `smaller` class in the slide! Ex: `## slide name {.smaller}`
 
 ```{r}
 DT::datatable(tab, options = list(pageLength = 5))
@@ -445,114 +411,155 @@ gt::gt(tab)
 reactable::reactable(tab)
 ```
 
-## Map using `ggplot2::ggplot()` and `{osmdata}`
+# Simulation and visualisation {background-color="#07202E"}
+
+## Simulation Settings (N=200) {.smaller}
+
+-   **Sample & Scale:**
+    -   Groups: Germany (`g`, $n=100$) \| Namibia (`n`, $n=100$).
+    -   Scale: 30 items (10 per domain), 4-point Likert, **RSM (acat)**
+        logic.
+-   **Latent Structure (Traits):**
+    -   Domains: **L** (Linguistics), **S** (Social), **P**
+        (Professional).
+    -   Consistency: $\rho = 0.6$ for same traits across domains.
+    -   **Conflicts (**$a$ vs $r$): $L = -0.2$ \| $S = -0.5$ \|
+        $P = -0.8$ (highest tension).
+-   **Group `n` (Namibia) Specifics:**
+    -   **Trait Shift:** Autonomy (`a`) -0.5; Relatedness (`r`) +0.5.
+    -   **Response Bias:** Added systematic **+0.6 "optimism bias"**.
+    -   **Group `g` (Germany) Specifics:**
+    -   **Trait Shift:** Autonomy (`a`) +0.5; Relatedness (`r`) -0.5.
+-   **Item Distribution:**
+    -   5 positive coding (**a**) and 5 negative coding (**r**) items
+        per domain.
 
 
+## Simulation via `brms`
 
-## Interactive maps using `{leaflet}`
+::: panel-tabset
 
-```{r echo=TRUE}
-#| fig-height: 3
 
-# Example taken from the leaflet package website
-m <- leaflet(width = "100%") |>
-  addTiles() |>  # Add default OpenStreetMap map tiles
-  addMarkers(lng = 174.768,
-             lat = -36.852,
-             popup = "The birthplace of R")
-m  # Print the map
+### Simulated data example
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+read_csv("data/simdata.csv") %>%
+  slice_sample(n = 6) %>%
+  arrange(ID, Domain) %>%
+  kable(align = "c")
 ```
 
+### Base model
 
-## Slide with speaker notes
+```{r}
+#| echo: true
+#| eval: true
 
-Adding speaker notes is easily done by creating a slide containing a div with class `.notes`, e.g.:
+fit <- brm(
+  formula = resp ~ 1 + comm + (0 + dim_a + dim_r | ID) + (1 | item),
+  data = simdata,
+  family = brmsfamily("acat", "logit"), 
+  prior = c(
+    prior(normal(0, 3), class = "b"), 
+    prior(normal(0, 1), class = "sd"),
+    prior(lkj(2), class = "cor")
+  ),
+  backend = "cmdstanr", chains = 4, iter = 2000, warmup = 1000, cores = 4,
+  file = "models/fit_rsm"
+)
 
 ```
-## Slide with speaker notes
 
-Slide content
+### Model summary
 
-::: {.notes}
-Speaker notes go here.
+```{r}
+summary (fit)
+```
+
 :::
+
+## Visualise the base model 
+
+```{=html}
+<style>
+.quarto-figure figcaption {
+  margin-top: -1.5em;
+  line-height: 1.2;
+}
+</style>
 ```
 
-When in presentation mode, you can access the speaker notes by pressing `s` on your keyboard.
+::: panel-tabset
 
-::: {.notes}
-Speaker notes go here. gh, A. (2010). Estimating teacher effectiveness from two-year changes in students’ test scores. Economics of Education Review, 29, 480e488. https://doi.org/ 10.1016/j.econedurev.2009.10.010. Lüdtke, O., Trautwein, U., Kunter, M., & Baumert, J. (2006). Reliability and agreement of student ratings of the classroom environment: A reanalysis of TIMSS data. Learning Environments Research, 9, 215e230. https://doi.org/10.1007/s10984006-9014-8. Marsh, H. W., Martin, A. J., & Cheng, J. H. S. (2008). A multilevel perspective on gender in classroom motivation and climate: Potential benefits of male teachers for boys? Journal of Educational Psychology, 100(1), 78e95. https://doi.org/10. 1037/0022-0663.100.1.78. Martin, A. J. (2006). Personal bests (PBs): A proposed multidimensional model and empirical analysis. British Journal of Educa
+### Wright map
+
+![**Figure 1: Wright map.** Results from the Bayesian 1PL RSM. The leftmost panel displays item difficulty estimates across the three domains (L, S, P). The two rightmost panels highlight the community-level trait differences.](figures/fig_rsm_recovery.png){width="75%" fig-align="center"}
+
+### Group Comparison
+
+![**Figure 2: Community Effects.** Conditional effects of Community. The left plot shows the predicted mean response. The right plot displays category-wise probabilities (1–4), demonstrating how the **+0.6 optimism bias** in group $N$ shifts responses toward higher categories.](figures/fig_comm_effects.png){width="75%" fig-align="center"}
 :::
 
-## Creating an automatic bibliography:
+## Advance model specification
 
-Research is almost always built upon existing knowledge. Acknowledging the latter is therefore key. Quarto allows this bz specifying `bibliography: bibfile.bib` in the YAML header.
+::: panel-tabset
 
-One can then add citations with the @ key [@arrowReviewOrdinalistUtilitarianNotes1973]. To generate the bibliography simply insert a slide with:
+### Advance model
+
+```{r}
+#| echo: true
+#| eval: true
+
+fit_sep <- brm(
+ formula = resp ~ 1 + comm + (0 + Domain:dim_a + Domain:dim_r | ID) + (1 | item),
+  data = simdata,
+  family = brmsfamily("acat", "logit"), 
+  prior = c(
+    prior(normal(0, 1), class = "sd"),
+    prior(lkj(2), class = "cor")
+  ),
+  chains = 4, iter = 2000, warmup = 1000, cores = 4, backend = "cmdstanr",
+  file = "models/fit_sep_dim"
+)
+```
+
+### Model summary 
+
+```{r}
+summary(fit_sep)
 
 ```
+
+
+:::
+
+## Visualise advance model
+```{=html}
+<style>
+.quarto-figure figcaption {
+  margin-top: -1.5em;
+  line-height: 1.2;
+}
+</style>
+```
+
+::: panel-tabset
+
+### Domain Correlations
+
+![**Figure 3: Domain-specific latent correlations.** Scatter plots illustrating the relationship between Autonomy ($a$) and Relatedness ($r$) across Linguistics (L), Social (S), and Professional (P) domains. Dashed lines represent the linear regressions of the recovered core conflicts, while point shapes distinguish between the German ($G$) and Namibian ($N$) communities.](figures/fig_sep_scatter.png){width="75%" fig-align="center"}
+
+### Correlation Matrix
+
+![**Figure 4: Latent correlation matrix ($\Phi$) recovery.** Heatmaps comparing the posterior mean estimates (left) against the target truth values (right) for the $6 \times 6$ latent structure. The model effectively recovers the simulated correlations.](figures/fig_phi_heatmap.png){width="75%" fig-align="center"}
+
+:::
+
 ## References
 
 ::: {#refs}
 :::
-```
-
-> See the [Quarto documentation entry on citations](https://quarto.org/docs/authoring/footnotes-and-citations.html#citations) for more details.
-
-## References
-
-::: {#refs}
-:::
-
-# Present and Share your Presentation with the World! {background-color="#07202E"}
-
-## Presenting your rendered presentation
-
-Rendering your presentation by pressing `CTRL/CMD + K` or the `render` button
-at the top of the `.qmd` file will create either a self-contained HTML
-presentation or an HTML file plus a folder with all supporting files
-needed by your presentation depending on whether `embed-resources:` is
-set to `true` or not in the YAML header.
-
-To present your slides locally, simply open the `html` file in your favorite
-browser. Don't forget to check out the key-bindings by typing `?` once your
-presentation is open in your browser.
-
-## Sharing your HTML presentation online
-
-Sharing your HTML presentation takes one line of code! Open up a terminal and
-type the following line to deploy your presentation to Netlify. This requires
-a free [Netlify](https://www.netlify.com/) account to work.
-
-```
-quarto publish netlify yourpresentation.qmd
-```
-
-> See the [Quarto documentation for additional ways of publishing your presentation](https://quarto.org/docs/output-formats/html-publishing.html#standalone-html).
-
-## Exporting into PDF
-
-You can use the function `pagedown::chrome_print()` to print the HTML version
-into a PDF!
-
-```r
-# install.packages("pagedown")
-pagedown::chrome_print("path-to-file.html")
-```
-
-## Acknowlegements
-
-This presentation and the template it showcases are inspired from the following
-creators. Check out their great themes.
-
-- [The RLadies theme](https://beatrizmilz.github.io/quarto-rladies-theme)
-- [The coeos theme](https://github.com/mcanouil/quarto-revealjs-coeos)
-- [Hrbrmstr's minimalistic `{ggplot}` themes](https://github.com/hrbrmstr/hrbrthemes)
-
-## Useful Resources
-
-Want to go further? Here are some great resources to get you started:
-
-- [Presenting Quarto Slides Documentation](https://quarto.org/docs/presentations/revealjs/presenting.html)
-- [The Advanced Quarto/Reveal Documentation](https://quarto.org/docs/presentations/revealjs/advanced.html)
-- [A Quarto Tip a Day](https://mine-cetinkaya-rundel.github.io/quarto-tip-a-day/)
