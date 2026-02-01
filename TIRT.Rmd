@@ -157,6 +157,29 @@ fig_final <- p1 + p_ability +
 
 print(fig_final)
 
+ggsave("figures/fig_rsm_recovery.pdf", fig_final, width = 8, height = 5, device = cairo_pdf)
+ggsave("figures/fig_rsm_recovery.png", fig_final, width = 8, height = 5, dpi = 2000)
+
+```
+
+
+
+```{r}
+
+ce_default <- conditional_effects(fit, effects = "comm")
+ce_cat     <- conditional_effects(fit, effects = "comm", categorical = TRUE)
+
+
+p1_native <- plot(ce_default, plot = FALSE)[[1]]
+p2_native <- plot(ce_cat, plot = FALSE)[[1]]
+
+
+fig_comm_effects <- p1_native | p2_native
+
+
+print(fig_comm_effects)
+ggsave("figures/fig_comm_effects.png", fig_comm_effects, width = 8, height = 5, dpi = 2000)
+
 ```
 
 
@@ -217,7 +240,7 @@ plot_df <- as.data.frame.table(re_raw) %>%
     by = "ID"
   )
 
-ggplot(plot_df, aes(x = a_Estimate, y = r_Estimate, color = Domain)) +
+fig3 <- ggplot(plot_df, aes(x = a_Estimate, y = r_Estimate, color = Domain)) +
   geom_errorbar(aes(xmin = a_Q2.5, xmax = a_Q97.5), alpha = 0.1, linewidth = 0.2) +
   geom_errorbar(aes(ymin = r_Q2.5, ymax = r_Q97.5), alpha = 0.1, linewidth = 0.2) +
   
@@ -246,6 +269,9 @@ ggplot(plot_df, aes(x = a_Estimate, y = r_Estimate, color = Domain)) +
     legend.position = "bottom",
     aspect.ratio = 1
   )
+
+
+ggsave("figures/fig_sep_scatter.png", fig3, width = 9, height = 5, dpi = 2000)
 ```
 ```{r}
 
@@ -288,7 +314,7 @@ plot_df <- bind_rows(df_sim, df_truth) %>%
 
 # --- 3. High-Contrast Visualization ---
 
-ggplot(plot_df, aes(x = V1, y = V2, fill = Cor)) +
+fig4 <- ggplot(plot_df, aes(x = V1, y = V2, fill = Cor)) +
   # Use thick white grid lines to emphasize the 6x6 structure
   geom_tile(color = "white", linewidth = 1) +
   # Add labels with dynamic color based on tile intensity
@@ -312,11 +338,13 @@ ggplot(plot_df, aes(x = V1, y = V2, fill = Cor)) +
     panel.grid = element_blank(),
     axis.title = element_blank(),
     axis.text = element_text(color = "black", size = 9, face = "bold"),
-    # Bürkner style: Gray banner with black frame
     strip.background = element_rect(fill = "#E0E0E0", color = "black", linewidth = 1.2),
     strip.text = element_text(face = "bold", size = 9),
     aspect.ratio = 1
   )
+
+
+ggsave("figures/fig_phi_heatmap.png", fig4, width = 9, height = 5, dpi = 2000)
 ```
 ```{r}
 library(tidyverse)

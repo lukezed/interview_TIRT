@@ -90,6 +90,13 @@ pacman::p_load(
     patterns** [@harkness2020why, pp.18]."
 :::
 
+::: {.notes}
+Since IRT models carry a strong assumption that a set of items measure a single underlying construct;  it's important to first clarify what we mean by "developmental foci." 
+To frame this, I'll draw on the concept of the developmental niche, which describes children's development through three interrelated components, and Parents' developmental foci can be understood as a core part of the third component.
+This connects closely to another framework i.e, parental ethnotheories, the cultural models of parenting. The ethnotheories shape parents' beliefs, expectations, and goals for their children, and these all reflect what parents perceive as "the best ways" to raise their children, and these choices tend to follow certain cultural patterns.
+So my take away is: developmental foci are not accidental interests that are completely individualized, nor are they structural forces that one cannot escape. Rather, they represent parents' internalized cultural models that can be observed and, crucially, measured.
+:::
+
 ## The basic assumptions of cultural models
 
 :::: panel-tabset
@@ -124,6 +131,15 @@ Data from [@ndzenyuiy2026parent]:
 | A baby should be always in close proximity with his/her mother, so that she can react immediately to his/her signals. | **0.424** |
 :::
 ::::
+
+::: {.notes}
+Now, there are different assumptions about these cultural models. The convenient one is the unidimensional assumption. We have many binary pairs in the literature here. Under this assumption, a parent's tendency falls somewhere on a single spectrum, you either be individualism or collectivism, you can't be both.
+This makes modeling straightforward—we only need one set of items, either positively or negatively worded, and a simple random intercept for each person.
+However, this approach has received many criticism for being overly simplified. People can—and indeed must—hold both orientations often, because e.g., autonomy and relatedness are both fundamental human needs.
+My own critique is that this won't work because parents can simultaneously expect their children to think independently while also maintaining close ties with family and community. This is increasingly common in China, for example.
+Roman, in your Cameroon study, you may have noticed that the factor analysis results show most negatively worded items are not functioning well. This also suggests they might be tapping into a different dimension of the construct, rather than simply the opposite side.
+:::
+
 
 ## The basic assumptions of cultural models
 
@@ -167,6 +183,12 @@ How important is it that your child, when an adult [@liang2021measur]...
 :::
 ::::
 
+::: {.notes}
+A more popular, and I would argue more reasonable, approach is to adopt a multidimensional framework.
+For instance, Kağıtçıbaşı's four-field scheme encourages people to measure multidimensional: the agency dimension, and the interpersonal distance dimension.
+By crossing these two dimensions, we get four prototypical selves. This framework has been empirically validated and shown to effectively distinguish different community prototypes across various cultural contexts. The example items on the right illustrate how we might operationalize each dimension separately, allowing for a more nuanced measurement of parental developmental foci.
+:::
+
 # Some concerns {background-color="#07202E" background-opacity="0.8"}
 
 ## Issues in IRT
@@ -174,6 +196,13 @@ How important is it that your child, when an adult [@liang2021measur]...
 -   Optimistic/Conservative responding style
 -   Ceiling effect
 -   Anchoring
+
+:::{.notes}
+Now there are some practical concerns I can think of when applying IRT in cross-cultural research.
+The first is responding style. I once watched a Cambridge student arguing with Charlie Clark that when African respondents tick five on "how happy are you" and Western respondents tick three, these scores are not objectively, or cross-culturally, comparable. And if you look at the PISA 2012 example here, classroom management is positively linked to math performance within each country. But when you pool the data across countries, the correlation disappears, and it even becomes negative when you add more countries. One explanation is that lower-performing communities may have more optimistic responding styles.
+The second concern is ceiling effect. When asking about parental foci, respondents tend to tick extreme categories like one or five quite easily, which makes threshold estimation unstable.
+These concerns can, to some extent, be addressed by providing anchors in the research design.
+:::
 
 ## Strange Results in PISA 2012
 
