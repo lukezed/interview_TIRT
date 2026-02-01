@@ -5,7 +5,8 @@ author: "Chi Zhang"
 institute: the University of Manchester
 date: today
 date-format: "dddd, [the] D[<sup style='font-size:65%;font-style:italic;'>th</sup>] [of] MMMM, YYYY"
-bibliography: bib/template.bib
+bibliography: bib/bib.bib
+csl: https://www.zotero.org/styles/apa
 format:
   dime-revealjs:
     embed-resources: true
@@ -66,357 +67,133 @@ pacman::p_load(
 
 # The basic IRT assumptions {background-color="#07202E"}
 
-## Bullets
+## What is parents' development foci?
 
-When you click the **Render** button a document will be generated that
-includes:
+::: panel-tabset
+### Developmental Niche
 
--   Content authored with markdown
--   Output from executable code
+-   Physical and social settings of the child’s daily life;
+-   Customs and practices of care; and
+-   **The psychology of the caretakers [@super1986develo].**
 
-> This is part of the [Quarto
-> documentation](https://quarto.org/docs/presentations/).
+### Parental Ethnotheories
 
-## R Code
+-   Cultural models of parenting and child development held by parents
+    and others [@harkness1996parent];
 
-When you click the **Render** button a presentation will be generated
-that includes both content and the output of embedded code. You can
-embed code like this:
+-   Also link to parents' cultural belief
+    systems/expectations/goals/focus etc.
 
-```{r mini_code_test}
-#| echo: true
-1 + 1
-```
+-   "Within the constraints imposed by the wider environment, parents
+    make choices about **the best ways** to take care of their children,
+    and these choices tend to follow **culturally recognizable
+    patterns** [@harkness2020why, pp.18]."
+:::
 
-> This is part of the [Quarto
-> documentation](https://quarto.org/docs/presentations/).
+## The basic assumptions of cultural models
 
-You can also add `text marked as code`!
+:::: panel-tabset
+### Unidimensional spectrum
 
-## Equations
+Individualism/collectivism [e.g., @triandis1989self]; distal/proximal
+parenting [@keller2009cultur]; autonomy/relatedness [@keller2006cultur]
+...
 
-Adding Latex style equations is straightforward. Here is Euler's
-identity:
+-   **+** : Easy to model `(1|person)`;
 
-$$
-\begin{equation}
-e^{i\pi} + 1 = 0
-\end{equation}
-$$
+-   **-** : Too simplified, criticisms argue autonomy and relatedness
+    can coexist and need to coexist because they are both human needs
+    [@oyserman2002rethin; @keller2016psycho].
 
-. . .
+### Example
 
-And here is Shepherd's lemma:
+::: {style="font-size: 0.7em;"}
+Data from [@ndzenyuiy2026parent]:
 
-$$
-\begin{equation}
-\frac{P_1 - P_2}{Q_1 - Q_2} > \frac{P_1 - P_3}{Q_1 - Q_3}
-\end{equation}
-$$
+| Parental Ethnotheory Questionnaire (PEQ) Item | Factor Loading |
+|:-----------------------------------------------------|:----------------:|
+| It is important to rock a crying baby on the arms in order to console him/her. | 0.000 |
+| Sleeping through the night should be trained as early as possible. | -0.209 |
+| It is not necessary to react immediately to a crying baby. | **-0.321** |
+| You cannot start early enough to direct the infant’s attention towards objects and toys. | -0.152 |
+| Gymnastics make a baby strong. | **0.507** |
+| If a baby is fussy, he/she should be immediately picked up. | **0.767** |
+| It is good for a baby to sleep alone. | 0.000 |
+| When a baby cries, he/she should be narrated immediately. | **0.551** |
+| Babies should be left crying for a moment in order to see whether they console themselves. | -0.175 |
+| A baby should be always in close proximity with his/her mother, so that she can react immediately to his/her signals. | **0.424** |
+:::
+::::
 
-## Images
+## The basic assumptions of cultural models
 
-Adding images is easy, simply type
-`![Photo Description](path\to\image)`, et voilà!
+:::: panel-tabset
+### Multidimensional construct
 
-![](https://cdn.pixabay.com/photo/2019/06/21/19/27/switzerland-4290226_960_720.jpg)
+For example, Kağıtçıbaşı’s [-@kagitcibasi2017family] four-field scheme
+with variations in the dimensions of agency (autonomy & heteronomy) and
+interpersonal distance (closeness & separateness).
 
-Source:
-[Link](https://cdn.pixabay.com/photo/2019/06/21/19/27/switzerland-4290226_960_720.jpg)
+-   **independent self**: autonomy + separateness (western middle-class,
+    *Germany*)
+-   **interdependent self**: heteronomy + closeness (rural farming
+    community, *Namibia*)
+-   **autonomous-related self**: autonomy + closeness (non-western urban
+    community, *China*)
+-   **separated heteronomous self**: heteronomy + separateness
 
-## Background image {background-image="images/train.jpg"}
+### Example
 
-[Source:
-[Link](https://cdn.pixabay.com/photo/2012/10/25/23/18/train-62849_960_720.jpg)]{.absolute
-bottom="0" left="0"}
+::: {style="font-size: 0.6em;"}
+How important is it that your child, when an adult [@liang2021measur]...
+
+| Item | Item (stem continuation) | Dimension |
+|--------------:|:------------------------------------------|:--------------|
+| 1 | … maintains good relationships with many people? | Relatedness |
+| 2 | … cares about others’ feelings? | Relatedness |
+| 3 | … is loyal to his or her friends? | Relatedness |
+| 4 | … feels well connected to other people? | Relatedness |
+| 5 | … is well connected to the extended family (grandparents, aunts, cousins, etc.)? | Relatedness |
+| 6 | … tries to reach his or her goals without anyone else’s help? | Autonomy |
+| 7 | … tries not to depend on someone else to achieve his or her goals? | Autonomy |
+| 8 | … typically decides on a course of action without help from others? | Autonomy |
+| 9 | … makes decisions about what to do without being influenced by others’ opinions? | Autonomy |
+| 10 | … likes to live without many ties to others? | Separateness |
+| 11 | … prefers to live alone? | Separateness |
+| 12 | … keeps personal issues to himself or herself? | Separateness |
+| 13 | … does things in traditional ways? | Heteronomy |
+| 14 | … does the things that other people expect of him or her? | Heteronomy |
+| 15 | … avoids doing things that other people say are wrong? | Heteronomy |
+:::
+::::
 
 # Some concerns {background-color="#07202E" background-opacity="0.8"}
 
-## Tabset example
+## Issues in IRT
 
-::: panel-tabset
-## Example 1
+-   Optimistic/Conservative responding style
+-   Ceiling effect
+-   Anchoring
 
-Content here for tabset 1 :)
+## Strange Results in PISA 2012
 
-## Example 2
+![From [@kyllonen2015anchor]](figures/PISA.png){width="80%" fig-align="center" style="margin-top: 500px;"}
 
-More content here, for tabset 2 :)
-:::
+## Example of anchors
 
-## Incremental content
-
-Hi!
-
-. . .
-
-Use `. . .` to separate content as an incremental slide!
-
-## You can add R code to plot data...
-
-```{r first_plot}
-#| echo: true
-g <- starwars |>
-  ggplot() +
-  geom_point(aes(x = height, y = mass)) +
-  theme_dime()
-```
-
-## You can add R code to plot data...and focus on (a) specific line(s):
-
-```{r}
-#| echo: true
-#| code-line-numbers: "4-6"
-starwars <- starwars |>
-  dplyr::mutate(name = ifelse(name %in% c("Jabba Desilijic Tiure", "Tarfful"),
-                              name, ""))
-
-g <- starwars |>
-  ggplot() +
-  geom_point(aes(x = height, y = mass, col = sex)) +
-  ggrepel::geom_text_repel(aes(x = height,
-                               y = mass,
-                               label = name),
-                           max.overlaps = 100) +
-  labs(title = "Star Wars Example",
-       caption = "Star Wars Example Dataset",
-       col = "Sex") +
-  theme_dime()
-```
-
-> See the [Quarto Documentation for more
-> details.](https://quarto.org/docs/presentations/revealjs/#code-blocks)
-
-## Before showing the results :)
-
-```{r}
-#| fig.align: center
-#| echo: true
-g
-```
-
-## A DIME color palette
-
-The theme also contains a DIME/World Bank color palette and a color
-generator to make graphs more uniform and easier to generate.
-`dime_palette()` yields a named vector with the HEX codes of the
-corresponding colors for an easy integration in `{ggplot2}` graphs.
-
-```{r}
-#| fig.align: center
-#| echo: true
-#| fig-height: 1.5
-# The default discrete DIME color palette
-dime_palette(name = "DIME", 5, type = "discrete")
-
-# A continuous palette based on the DIME palette
-dime_palette(name = "DIME", 21, type = "continuous")
-```
-
-## A few more penguin examples {.scrollable}
-
-Let's create a few more plots using the great `{palmerpenguins}` dataset
-and illustrate Simpson's Paradox. These examples are inspired by [this
-great talk](https://apreshill.github.io/palmerpenguins-useR-2022).
-
-::::: columns
-::: {.column width="50%"}
-```{r}
-#| fig.align: center
-#| echo: false
-
-penguins <- palmerpenguins::penguins
-
-penguins |>
-  ggplot(aes(bill_length_mm, bill_depth_mm)) +
-  geom_point() +
-  geom_smooth(method = lm,
-              formula = y ~ x,
-              se = F) +
-  labs(title = "Palmer Penguins: Simpson's Paradox",
-       caption = "Palmer Penguins Dataset",
-       x = "Bill Length (mm)",
-       y = "Bill Depth (mm)",
-       col = "Species") +
-  theme_dime()
-```
-:::
-
-::: {.column width="50%"}
-```{r}
-#| fig.align: center
-#| echo: false
-
-penguins <- palmerpenguins::penguins
-
-penguins |>
-  ggplot(aes(bill_length_mm, bill_depth_mm, col = species)) +
-  geom_point() +
-  geom_smooth(method = lm,
-              formula = y ~ x,
-              se = F) +
-  ggpubr::stat_regline_equation(
-    aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
-    formula = formula
-  ) +
-  labs(title = "Palmer Penguins: Simpson's Paradox",
-       caption = "Palmer Penguins Dataset",
-       x = "Bill Length (mm)",
-       y = "Bill Depth (mm)",
-       col = "Species") +
-  theme_dime()
-```
-:::
-:::::
-
-## Creating interactive graphs with Observable JS {.scrollable .small}
-
-Another way of creating interactive visualizations within your
-presentations is to use [Observable JS](https://observablehq.com/), a
-Java Script framework developed by the creators of
-[D3.js](https://d3js.org/). See the [Quarto
-documentation](https://quarto.org/docs/interactive/ojs/) for more
-details.
-
-```{ojs}
-data = FileAttachment("data/palmer-penguins.csv").csv({ typed: true })
-```
-
-```{ojs}
-//| panel: sidebar
-
-// Function to filter data
-filtered = data.filter(function(penguin) {
-  return bill_length_min < penguin.bill_length_mm &&
-         islands.includes(penguin.island);
-})
-
-viewof bill_length_min = Inputs.range(
-  [32, 50],
-  {value: 35, step: 1, label: "Bill length (min):"}
-)
-viewof islands = Inputs.checkbox(
-  ["Torgersen", "Biscoe", "Dream"],
-  { value: ["Torgersen", "Biscoe"],
-    label: "Islands:"
-  }
-)
-```
-
-```{ojs}
-Plot.rectY(filtered,
-  Plot.binX(
-    {y: "count"},
-    {x: "body_mass_g", fill: "species", thresholds: 20}
-  ))
-  .plot({
-    facet: {
-      data: filtered,
-      x: "sex",
-      y: "species",
-      marginRight: 80
-    },
-    marks: [
-      Plot.frame(),
-    ]
-  }
-)
-```
-
-## Penguin regression tables
-
-::::: {.columns .vh-center-container}
-::: {.column width="40%"}
-$$
-\text{Bill Depth}_{i} = \alpha + \beta \times \text{Bill Length}_{i} + \epsilon_{i}
-$$
-
-```{r}
-#| fig.align: center
-#| echo: false
-
-fullmodel <- lm(bill_depth_mm ~ bill_length_mm, penguins)
-huxtable::huxreg(fullmodel) |>
-  huxtable::set_font_size(11) # Smaller font size to fit on slide
-```
-:::
-
-::: {.column width="40%"}
-$$
-\text{Bill Depth}_{i, k} = \alpha_{k} + \beta_{k} \times \text{Bill Length}_{k, i} + \epsilon_{i} \\
-\text{where } k = \text{Gentoo}
-$$
-
-```{r}
-#| fig.align: center
-#| echo: false
-
-gentoomodel <- lm(bill_depth_mm ~ bill_length_mm,
-                  dplyr::filter(penguins, species == "Gentoo"))
-huxtable::huxreg(gentoomodel) |>
-  huxtable::set_font_size(11) # Smaller font size to fit on slide
-```
-:::
-:::::
-
-## What about other tables? {.smaller}
-
-### `knitr::kable()`
-
-::::: {.columns .h-center-container}
-::: {.column width="45%"}
-```{r}
-#| label: kable-ex
-#| echo: true
-#| eval: false
-tab <- starwars |>
-  tidyr::drop_na(species) |>
-  group_by(species) |>
-  summarise(
-    n = n(),
-    mean_heigth = round(mean(height, na.rm = TRUE)),
-    mean_mass = round(mean(mass, na.rm = TRUE))
-  ) |>
-  slice_max(order_by = n, n = 4)
-
-knitr::kable(tab)
-```
-:::
-
-::: {.column width="45%"}
-```{r}
-#| label: kable-ex
-#| eval: true
-```
-:::
-:::::
-
-## `DT::datatable()` {.smaller}
-
-With the `smaller` class in the slide! Ex: `## slide name {.smaller}`
-
-```{r}
-DT::datatable(tab, options = list(pageLength = 5))
-```
-
-## `gt::gt()`
-
-```{r}
-gt::gt(tab)
-```
-
-## `reactable::reactable()`
-
-```{r}
-reactable::reactable(tab)
-```
+-   Anchor in category (How often do you.... 'half of the time')
+-   Anchor in items [items from free listing, @vandevijver2004bias]
+-   Anchor in context (We would like to know which of the following
+    characteristics are important for your child when he or she has
+    become an adult...; )
+-   Anchor in modelling (`Comm` in fixed/random effect)
 
 # Simulation and visualisation {background-color="#07202E"}
 
-## Simulation Settings (N=200) {.smaller}
+## Simulation Settings (N=200)
 
 -   **Sample & Scale:**
-    -   Groups: Germany (`g`, $n=100$) \| Namibia (`n`, $n=100$).
+    -   Groups: Germany (g, $n=100$) \| Namibia (n, $n=100$).
     -   Scale: 30 items (10 per domain), 4-point Likert, **RSM (acat)**
         logic.
 -   **Latent Structure (Traits):**
@@ -425,21 +202,15 @@ reactable::reactable(tab)
     -   Consistency: $\rho = 0.6$ for same traits across domains.
     -   **Conflicts (**$a$ vs $r$): $L = -0.2$ \| $S = -0.5$ \|
         $P = -0.8$ (highest tension).
--   **Group `n` (Namibia) Specifics:**
-    -   **Trait Shift:** Autonomy (`a`) -0.5; Relatedness (`r`) +0.5.
+-   **Group n (Namibia) Specifics:**
+    -   **Trait Shift:** Autonomy (a) -0.5; Relatedness (r) +0.5.
     -   **Response Bias:** Added systematic **+0.6 "optimism bias"**.
-    -   **Group `g` (Germany) Specifics:**
-    -   **Trait Shift:** Autonomy (`a`) +0.5; Relatedness (`r`) -0.5.
--   **Item Distribution:**
-    -   5 positive coding (**a**) and 5 negative coding (**r**) items
-        per domain.
-
+    -   **Group g (Germany) Specifics:**
+    -   **Trait Shift:** Autonomy (a) +0.5; Relatedness (r) -0.5.
 
 ## Simulation via `brms`
 
 ::: panel-tabset
-
-
 ### Simulated data example
 
 ```{r}
@@ -479,35 +250,40 @@ fit <- brm(
 ```{r}
 summary (fit)
 ```
-
 :::
 
-## Visualise the base model 
+## Visualise the base model
 
-```{=html}
 <style>
 .quarto-figure figcaption {
   margin-top: -1.5em;
   line-height: 1.2;
 }
 </style>
-```
 
 ::: panel-tabset
-
 ### Wright map
 
-![**Figure 1: Wright map.** Results from the Bayesian 1PL RSM. The leftmost panel displays item difficulty estimates across the three domains (L, S, P). The two rightmost panels highlight the community-level trait differences.](figures/fig_rsm_recovery.png){width="75%" fig-align="center"}
+![**Figure 1: Wright map.** Results from the Bayesian 1PL RSM. The
+leftmost panel displays item difficulty estimates across the three
+domains (L, S, P). The two rightmost panels highlight the
+community-level trait
+differences.](figures/fig_rsm_recovery.png){width="75%"
+fig-align="center"}
 
 ### Group Comparison
 
-![**Figure 2: Community Effects.** Conditional effects of Community. The left plot shows the predicted mean response. The right plot displays category-wise probabilities (1–4), demonstrating how the **+0.6 optimism bias** in group $N$ shifts responses toward higher categories.](figures/fig_comm_effects.png){width="75%" fig-align="center"}
+![**Figure 2: Community Effects.** Conditional effects of Community. The
+left plot shows the predicted mean response. The right plot displays
+category-wise probabilities (1–4), demonstrating how the **+0.6 optimism
+bias** in group $N$ shifts responses toward higher
+categories.](figures/fig_comm_effects.png){width="75%"
+fig-align="center"}
 :::
 
 ## Advance model specification
 
 ::: panel-tabset
-
 ### Advance model
 
 ```{r}
@@ -527,36 +303,42 @@ fit_sep <- brm(
 )
 ```
 
-### Model summary 
+### Model summary
 
 ```{r}
 summary(fit_sep)
 
 ```
-
-
 :::
 
 ## Visualise advance model
-```{=html}
+
 <style>
 .quarto-figure figcaption {
   margin-top: -1.5em;
   line-height: 1.2;
 }
 </style>
-```
 
 ::: panel-tabset
-
 ### Domain Correlations
 
-![**Figure 3: Domain-specific latent correlations.** Scatter plots illustrating the relationship between Autonomy ($a$) and Relatedness ($r$) across Linguistics (L), Social (S), and Professional (P) domains. Dashed lines represent the linear regressions of the recovered core conflicts, while point shapes distinguish between the German ($G$) and Namibian ($N$) communities.](figures/fig_sep_scatter.png){width="75%" fig-align="center"}
+![**Figure 3: Domain-specific latent correlations.** Scatter plots
+illustrating the relationship between Autonomy ($a$) and Relatedness
+($r$) across Linguistics (L), Social (S), and Professional (P) domains.
+Dashed lines represent the linear regressions of the recovered core
+conflicts, while point shapes distinguish between the German ($G$) and
+Namibian ($N$) communities.](figures/fig_sep_scatter.png){width="75%"
+fig-align="center"}
 
 ### Correlation Matrix
 
-![**Figure 4: Latent correlation matrix ($\Phi$) recovery.** Heatmaps comparing the posterior mean estimates (left) against the target truth values (right) for the $6 \times 6$ latent structure. The model effectively recovers the simulated correlations.](figures/fig_phi_heatmap.png){width="75%" fig-align="center"}
-
+![**Figure 4: Latent correlation matrix (**$\Phi$) recovery. Heatmaps
+comparing the posterior mean estimates (left) against the target truth
+values (right) for the $6 \times 6$ latent structure. The model
+effectively recovers the simulated
+correlations.](figures/fig_phi_heatmap.png){width="75%"
+fig-align="center"}
 :::
 
 ## References
